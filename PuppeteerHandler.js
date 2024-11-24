@@ -15,7 +15,11 @@ class PuppeteerHandler {
     try {
       this.browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [  '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage', // Prevents memory-related crashes
+          '--disable-accelerated-2d-canvas',
+          '--disable-gpu',],
       });
       console.log('Puppeteer browser launched successfully.');
       this.page = await this.browser.newPage();
@@ -92,7 +96,6 @@ class PuppeteerHandler {
 
           console.log(matchTimeLineDeltaCredentials);
 
-          if (!newPage.isClosed()) newPage.close();
           this.isFetchingMatchTimelineDelta = false;
           this.matchTimeLineDeltaCredentials = matchTimeLineDeltaCredentials;
           resolvePromise(matchTimeLineDeltaCredentials);
@@ -113,17 +116,18 @@ class PuppeteerHandler {
 
       try {
         const credentials = await Promise.race([timelineDeltaPromise, timeoutPromise]);
+        await newPage.close();
         return credentials;
       } catch (error) {
         console.log('No /match_timelinedelta request found within timeout.');
-        if (!newPage.isClosed()) newPage.close();
+        await newPage.close();
         this.isFetchingMatchTimelineDelta = false;
         return null;
       }
 
     } catch (error) {
       console.error('Error:', error);
-      if (newPage && !newPage.isClosed()) newPage.close();
+      if (newPage) await newPage.close();
       this.isFetchingMatchTimelineDelta = false;
       return null;
     }
