@@ -1,15 +1,20 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+
+puppeteer.use(StealthPlugin());
 
 class PuppeteerHandler {
   constructor() {
     this.browser = null;
     this.page = null;
+    this.isFetchingMatchTimelineDelta = false;
+    this.matchTimeLineDeltaCredentials = null;
   }
 
   async launchPuppeteer() {
     try {
       this.browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
       });
       console.log('Puppeteer browser launched successfully.');
       this.page = await this.browser.newPage();
@@ -53,6 +58,60 @@ class PuppeteerHandler {
 
   getBrowser() {
     return this.browser;
+  }
+
+  // for dorado bet
+  async getMatchTimelineDelta(matchId) {
+    console.log("matchId: ",matchId);
+    if (this.isFetchingMatchTimelineDelta) {
+      console.log('Already fetching match timeline delta.');
+      return;
+    }
+
+    this.isFetchingMatchTimelineDelta = true;
+    let newPage = null;
+
+    try {
+      newPage = await this.browser.newPage();
+      await newPage.setRequestInterception(true);
+
+      newPage.on('request', (request) => {
+        const url = request.url();
+        if (url.includes('/match_timelinedelta')) {
+          const urlObj = new URL(url);
+          const matchTimeLineDeltaCredentials = {
+            fullUrl: url,
+            queryParams: decodeURIComponent(urlObj.searchParams.toString()),
+          };
+
+          console.log(matchTimeLineDeltaCredentials);
+
+          if (!newPage.isClosed()) newPage.close();
+          this.isFetchingMatchTimelineDelta = false;
+          this.matchTimeLineDeltaCredentials = matchTimeLineDeltaCredentials;
+        } else {
+          request.continue();
+        }
+      });
+
+      const pageUrl = `https://doradobet.com/deportes/partido/${matchId}`;
+      await newPage.goto(pageUrl);
+
+      setTimeout(() => {
+        if (!newPage.isClosed()) {
+          console.log('No /match_timelinedelta request found.');
+          newPage.close();
+        }
+        this.isFetchingMatchTimelineDelta = false;
+      }, 15000); // 15 seconds timeout
+
+      return this.matchTimeLineDeltaCredentials;
+
+    } catch (error) {
+      if (newPage && !newPage.isClosed()) newPage.close();
+      this.isFetchingMatchTimelineDelta = false;
+    }
+  
   }
 }
 

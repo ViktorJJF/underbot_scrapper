@@ -15,9 +15,8 @@ app.get('/', async (req, res) => {
     try {
       console.log("El brwoser: ",browser)
       const page = await browser.newPage();
-      const version = await page.evaluate(() => puppeteer.version);
       await page.close();
-      res.send(`Hello, world! Puppeteer version: ${version}`);
+      res.send(`Hello, world!`);
     } catch (error) {
       console.error("Error:", error);
       res.status(500).send("Internal Server Error");
@@ -26,12 +25,25 @@ app.get('/', async (req, res) => {
 
 app.get('/screenshot', async (req, res) => {
     try {
+      const {url} = req.query;
         const page = await browser.newPage();
-        await page.goto('https://www.example.com'); // Replace with your desired URL
+        await page.goto(url); // Replace with your desired URL
         const screenshot = await page.screenshot();
         await page.close();
         res.contentType('image/png');
         res.send(screenshot);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get('/match_timeline_delta', async (req, res) => {
+    try {
+        const {matchId} = req.query;
+        const matchTimelineDelta = await puppeteerHandler.getMatchTimelineDelta(matchId);
+        console.log("matchTimelineDelta: ",matchTimelineDelta);
+        res.status(200).send({ok:true, matchTimelineDeltaCredentials: matchTimelineDelta});
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send("Internal Server Error");
