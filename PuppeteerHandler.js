@@ -14,12 +14,14 @@ class PuppeteerHandler {
   async launchPuppeteer() {
     try {
       this.browser = await puppeteer.launch({
+        timeout: 0,
         headless: true,
         args: [  '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage', // Prevents memory-related crashes
           '--disable-accelerated-2d-canvas',
           '--disable-gpu',],
+          xecutablePath: '/usr/bin/google-chrome-stable'
       });
       console.log('Puppeteer browser launched successfully.');
       this.page = await this.browser.newPage();
