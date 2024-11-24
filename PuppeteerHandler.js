@@ -14,7 +14,7 @@ class PuppeteerHandler {
   async launchPuppeteer() {
     try {
       this.browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       console.log('Puppeteer browser launched successfully.');
@@ -76,6 +76,11 @@ class PuppeteerHandler {
       newPage = await this.browser.newPage();
       await newPage.setRequestInterception(true);
 
+      let resolvePromise;
+      const timelineDeltaPromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+
       newPage.on('request', (request) => {
         const url = request.url();
         if (url.includes('/match_timelinedelta')) {
@@ -90,6 +95,7 @@ class PuppeteerHandler {
           if (!newPage.isClosed()) newPage.close();
           this.isFetchingMatchTimelineDelta = false;
           this.matchTimeLineDeltaCredentials = matchTimeLineDeltaCredentials;
+          resolvePromise(matchTimeLineDeltaCredentials);
         } else {
           request.continue();
         }
@@ -98,21 +104,29 @@ class PuppeteerHandler {
       const pageUrl = `https://doradobet.com/deportes/partido/${matchId}`;
       await newPage.goto(pageUrl);
 
-      setTimeout(() => {
-        if (!newPage.isClosed()) {
-          console.log('No /match_timelinedelta request found.');
-          newPage.close();
-        }
-        this.isFetchingMatchTimelineDelta = false;
-      }, 15000); // 15 seconds timeout
+      // Wait for credentials with 10 second timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Timeout waiting for match timeline delta'));
+        }, 10000);
+      });
 
-      return this.matchTimeLineDeltaCredentials;
+      try {
+        const credentials = await Promise.race([timelineDeltaPromise, timeoutPromise]);
+        return credentials;
+      } catch (error) {
+        console.log('No /match_timelinedelta request found within timeout.');
+        if (!newPage.isClosed()) newPage.close();
+        this.isFetchingMatchTimelineDelta = false;
+        return null;
+      }
 
     } catch (error) {
+      console.error('Error:', error);
       if (newPage && !newPage.isClosed()) newPage.close();
       this.isFetchingMatchTimelineDelta = false;
+      return null;
     }
-  
   }
 }
 
