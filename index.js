@@ -50,10 +50,12 @@ app.get('/match_timeline_delta', async (req, res) => {
     }
 });
 
+const PORT=process.env.PORT || 3000;
 
-const server = app.listen(3000, () => {
-    console.log('Server listening on port 3000');
-});
+
+const server = app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
 
 
 process.on('SIGINT', async () => {

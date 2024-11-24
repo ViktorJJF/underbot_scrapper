@@ -24,9 +24,10 @@ COPY . .
 
 # Set Puppeteer to use the installed Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PORT=8080
 
 # Expose the port if needed (replace 3000 with your app's port)
-EXPOSE 3000
+EXPOSE 8080
 
 # Start the application
 CMD ["node", "index.js"]
