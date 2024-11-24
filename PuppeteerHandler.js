@@ -14,7 +14,8 @@ class PuppeteerHandler {
   async launchPuppeteer() {
     try {
       this.browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       console.log('Puppeteer browser launched successfully.');
       this.page = await this.browser.newPage();
