@@ -23,7 +23,7 @@ class PuppeteerHandler {
           "--disable-accelerated-2d-canvas",
           "--disable-gpu",
         ],
-        xecutablePath: "/usr/bin/google-chrome-stable",
+        executablePath: "/usr/bin/google-chrome-stable",
       });
       console.log("Puppeteer browser launched successfully.");
       this.page = await this.browser.newPage();
