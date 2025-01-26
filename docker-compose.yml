@@ -2,7 +2,10 @@ services:
   app:
     build:
       context: .
+      container_name: underbot_scrapper
       dockerfile: Dockerfile
     ports:
-      - "3000:8080"
+      - "6000:8080"
+    volumes:
+      - ./screenshots:/app/screenshots
     restart: always

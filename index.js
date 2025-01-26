@@ -39,14 +39,13 @@ app.get("/screenshot", async (req, res) => {
     // Optionally, you can wait for a specific element or condition
     // await page.waitForSelector('selector'); // Wait for a specific element to appear
 
-    const screenshot = await page.screenshot({
-      path: "screenshot_endpoint.png",
+    await page.screenshot({
+      path: "./screenshots/screenshot_endpoint.png",
     });
 
     await page.close();
 
-    res.contentType("image/png");
-    res.send(screenshot);
+    res.sendFile("screenshot_endpoint.png", { root: __dirname });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
