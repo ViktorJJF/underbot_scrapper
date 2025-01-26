@@ -1,8 +1,8 @@
 services:
   app:
+    container_name: underbot_scrapper
     build:
       context: .
-      container_name: underbot_scrapper
       dockerfile: Dockerfile
     ports:
       - "6000:8080"
