@@ -15,13 +15,7 @@ class PuppeteerHandler {
     try {
       this.browser = await puppeteer.launch({
         timeout: 0,
-        headless: true,
-        args: [  '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage', // Prevents memory-related crashes
-          '--disable-accelerated-2d-canvas',
-          '--disable-gpu',],
-          xecutablePath: '/usr/bin/google-chrome-stable'
+        headless: false
       });
       console.log('Puppeteer browser launched successfully.');
       this.page = await this.browser.newPage();
@@ -108,7 +102,8 @@ class PuppeteerHandler {
 
       const pageUrl = `https://doradobet.com/deportes/partido/${matchId}`;
       await newPage.goto(pageUrl);
-
+      // take screenshot
+      await newPage.screenshot({ path: 'timeline.png' });
       // Wait for credentials with 10 second timeout
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
@@ -118,6 +113,7 @@ class PuppeteerHandler {
 
       try {
         const credentials = await Promise.race([timelineDeltaPromise, timeoutPromise]);
+        await newPage.screenshot({ path: 'timeline2.png' });
         await newPage.close();
         return credentials;
       } catch (error) {
