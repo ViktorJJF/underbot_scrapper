@@ -40,12 +40,12 @@ app.get("/screenshot", async (req, res) => {
     // await page.waitForSelector('selector'); // Wait for a specific element to appear
 
     await page.screenshot({
-      path: "./screenshots/screenshot_endpoint.png",
+      path: "screenshot_endpoint.png",
     });
 
     await page.close();
 
-    res.sendFile("screenshot_endpoint.png", { root: __dirname });
+    res.status(200).send({ ok: true });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
