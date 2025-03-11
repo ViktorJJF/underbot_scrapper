@@ -9,3 +9,7 @@ services:
     volumes:
       - ./screenshots:/app/screenshots
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
