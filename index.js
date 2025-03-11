@@ -55,6 +55,7 @@ app.get("/screenshot", async (req, res) => {
 app.get("/match_timeline_delta", async (req, res) => {
   try {
     const { matchId } = req.query;
+    console.log("Starting search for match: ", matchId);
     const matchTimelineDelta = await puppeteerHandler.getMatchTimelineDelta(
       matchId
     );
