@@ -13,3 +13,6 @@ services:
       resources:
         limits:
           memory: 1024M
+networks:
+  underbot_network:
+    name: underbot_network
